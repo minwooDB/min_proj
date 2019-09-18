@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TempMemMapper">
+	<select id="listTempMember" parameterType ="_int" resultType="vo.UsersVO">
+		select u.users_id, u.name, u.email, u.img, field from users u, users_group g where u.users_id = g.users_id and g.gid=#{gid} and cofirm in ('wait')
+	</select>
+	<select id="listCurrentMember" parameterType ="_int" resultType="vo.UsersVO">
+		select u.users_id, u.name, u.email, u.img, field from users u, users_group g where u.users_id = g.users_id and g.gid=#{gid} and cofirm in ('accept','leader')
+	</select>
+	<select id="statusJoin" parameterType="java.util.HashMap" resultType="_int">
+		select count(*) from users_group where gid=#{gid} and users_id =#{users_id} and cofirm in ('accept','leader')
+	</select>
+	<select id="checkUser" parameterType ="java.util.HashMap" resultType="_int">
+		select count(*) from users_group where users_id like #{users_id} and gid = #{gid}
+	</select>
+	<insert id="applyUser" parameterType="java.util.HashMap">
+		<selectKey resultType="_int" keyProperty="id" order="BEFORE">
+			select USERS_GROUP_SEQ.nextval from dual
+		</selectKey>
+		insert into USERS_GROUP(id, users_id, gid, cofirm)
+		values(#{id},#{users_id},#{gid},'wait')
+	</insert>
+	<update id="acceptMember" parameterType="java.util.HashMap">
+		UPDATE users_group SET cofirm = 'accept' WHERE gid= #{gid} and users_id= #{users_id}
+	</update>
+	<delete id="rejectMember" parameterType="java.util.HashMap">
+		  delete from users_group where gid=#{gid} and users_id=#{users_id}
+	</delete>
+</mapper>

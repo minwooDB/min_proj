@@ -1,0 +1,132 @@
+CREATE TABLE  users 
+(
+   users_id  varchar2(20) PRIMARY KEY,
+   name  varchar2(20) NOT NULL,
+   password  varchar2(20) NOT NULL,
+   email  varchar2(40) NOT NULL,
+   join_date  date,
+   img  varchar2(100),
+   field  NUMBER(8,0),
+   lat  varchar2(50),
+   lng  varchar2(50)
+);
+
+CREATE TABLE  board 
+(
+   bid  NUMBER(8,0) PRIMARY KEY,
+   writer  varchar2(20) NOT NULL,
+   title  varchar2(120) NOT NULL,
+   content  varchar2(900),
+   writedate  date,
+   cnt  NUMBER(8,0)
+);
+
+CREATE TABLE  comments
+(
+   cid  NUMBER(8,0) PRIMARY KEY,
+   bid  NUMBER(8,0) NOT NULL,
+   writer  varchar2(20) NOT NULL,
+   content  varchar2(500),
+   writedate  date
+);
+
+CREATE TABLE  field 
+(
+   fid  NUMBER(8,0) PRIMARY KEY,
+   type  varchar2(20) NOT NULL
+);
+
+CREATE TABLE  groups 
+(
+   gid  NUMBER(8,0) PRIMARY KEY,
+   g_name  varchar2(200) NOT NULL,
+   fid  NUMBER(8,0) NOT NULL,
+   leader  varchar2(20) NOT NULL,
+   g_content  varchar2(900),
+   limit_mem  NUMBER(8,0),
+   img  varchar2(100),
+   count_mem number(8,0),
+   lat  varchar2(50),
+   lng  varchar2(50),
+   location varchar2(500),
+   cnt NUMBER(8,0)
+);
+
+CREATE TABLE  users_group 
+(
+   id  NUMBER(8,0) PRIMARY KEY,
+   users_id  varchar2(20) NOT NULL,
+   gid  NUMBER(8,0) NOT NULL,
+   cofirm varchar2(20)
+);
+
+CREATE TABLE  notice 
+(
+   nid  NUMBER(8,0) PRIMARY KEY,
+   gid  NUMBER(8,0) NOT NULL,
+   writer  varchar2(20) NOT NULL,
+   title  varchar2(200) NOT NULL,
+   content  varchar2(900),
+   writedate  date,
+   files varchar2(500)
+);
+
+ALTER TABLE  board  ADD FOREIGN KEY ( writer ) REFERENCES  users  ( users_id );
+
+ALTER TABLE  comments  ADD FOREIGN KEY ( bid ) REFERENCES  board  ( bid );
+
+ALTER TABLE  comments  ADD FOREIGN KEY ( writer) REFERENCES  users  ( users_id );
+
+ALTER TABLE  users_group  ADD FOREIGN KEY ( users_id ) REFERENCES  users  ( users_id );
+
+ALTER TABLE  users_group  ADD FOREIGN KEY ( gid ) REFERENCES  groups  ( gid ) on delete cascade;
+    
+ALTER TABLE  users  ADD FOREIGN KEY ( field ) REFERENCES  field  ( fid );
+
+ALTER TABLE  groups  ADD FOREIGN KEY ( fid ) REFERENCES  field  ( fid );
+
+ALTER TABLE  notice  ADD FOREIGN KEY ( writer ) REFERENCES  users  ( users_id );
+
+ALTER TABLE  notice  ADD FOREIGN KEY ( gid ) REFERENCES  groups  ( gid ) on delete cascade;
+
+create sequence board_seq
+start with 1
+increment by 1;
+
+create sequence users_group_seq
+start with 1
+increment by 1;
+
+create sequence comments_seq
+start with 1
+increment by 1;
+
+create sequence field_seq
+start with 1
+increment by 1;
+
+create sequence groups_seq
+start with 1
+increment by 1;
+
+create sequence notice_seq
+start with 1
+increment by 1;
+
+select * from user_sequences;
+
+update board set bid=board_seq.nextval;
+update users_group set id=users_group_seq.nextval;
+update comments set cid=comments_seq.nextval;
+update field set fid=field_seq.nextval;
+update groups set gid=groups_seq.nextval;
+update notice set nid=notice_seq.nextval;
+
+commit;
+
+CREATE OR REPLACE FUNCTION RADIANS(nDegrees IN NUMBER) RETURN NUMBER DETERMINISTIC IS
+BEGIN
+  -- radians = degrees / (180 / pi)
+  -- RETURN nDegrees / (180 / ACOS(-1));  -- but 180/pi is a constant, so...
+  RETURN nDegrees / 57.29577951308232087679815481410517033235;
+END RADIANS;

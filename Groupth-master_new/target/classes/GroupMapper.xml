@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="GroupMapper">
+
+	<select id="popularGroup" resultType="vo.Group_InfoVO">
+		select * from (select * from groups order by cnt desc) g , field f where g.fid=f.fid and rownum &lt; 4
+	</select>
+	<insert id="insertGroup" parameterType="vo.GroupVO">
+		insert into groups(gid, g_name, fid, leader, g_content, limit_mem, img, count_mem,cnt)
+		values(GROUPS_SEQ.nextval,#{g_name},#{fid},#{leader},#{g_content},#{limit_mem},#{img},1,0)
+		<selectKey resultType="_int" keyProperty="gid" order="AFTER">
+			select GROUPS_SEQ.currval from dual
+		</selectKey>
+	</insert>
+	<insert id="insertUserGroupLeader" parameterType="java.util.HashMap">
+		<selectKey resultType="_int" keyProperty="id" order="BEFORE">
+			select USERS_GROUP_SEQ.nextval from dual
+		</selectKey>
+		insert into USERS_GROUP(id, users_id, gid, cofirm)
+		values(#{id},#{leader},#{gid},'leader')
+	</insert>
+	<select id="ListAllGroup" resultType="vo.Group_InfoVO">
+		select * from groups,field where groups.fid =field.fid
+	</select>
+	<select id = "searchField" parameterType = "string" resultType="vo.Group_InfoVO">
+		select * from groups,field where groups.fid =field.fid and field.type = #{field}
+	</select>
+	<select id = "searchNonField" parameterType = "string" resultType="vo.Group_InfoVO">
+		select * from groups,field where groups.fid =field.fid and upper(groups.g_name) like upper('%'||#{key}||'%')
+	</select>
+	<select id = "searchInfo" parameterType = "java.util.HashMap" resultType="vo.Group_InfoVO">
+		select * from groups,field where groups.fid =field.fid and (field.type = #{field} and upper(groups.g_name) like upper('%'||#{key}||'%'))
+	</select>
+	<select id="showContent" parameterType ="_int" resultType="vo.Group_InfoVO">
+		select * from groups,field where groups.fid =field.fid and groups.gid = #{gid}
+	</select>
+	<update id="showContentUpdateCount" parameterType ="_int">
+		update groups set cnt = cnt+1 where gid=#{gid}
+	</update>
+	<delete id="deleteGroup" parameterType="_int">
+		delete from groups where gid=#{gid}
+	</delete>
+	<update id="countAddMember" parameterType="_int">
+		update groups set count_mem =count_mem+1 where gid=#{gid}
+	</update>
+	<update id="countRemoveMember" parameterType="_int">
+		update groups set count_mem =count_mem-1 where gid=#{gid}
+	</update>
+	<update id="storeLocation" parameterType="java.util.HashMap">
+		update groups set lat =#{lat}, lng=#{lng}, location=#{location} where gid=#{gid}
+	</update>
+	<select id="findLoc" parameterType="_int" resultType="vo.GroupVO">
+		select * from groups where gid =#{gid}
+	</select>
+	<delete id="myInfoGroup" parameterType="java.util.HashMap">
+		delete from users_group where users_id = #{id} and gid=#{gid} and not cofirm in ('leader')
+	</delete>
+</mapper>
